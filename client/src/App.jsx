@@ -3,10 +3,11 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import axios from 'axios'
+import atsLogo from './assets/ats-logo.png'; 
 
 function App() {
-  const [count, setCount] = useState(0)
   const [res, setResponse] = useState([])
+  const [matchingSkill, setMatchingSkill] = useState([])
   const [file, setFile] = useState(null)
   const [jobDescription, setJobDescription] = useState('');
 
@@ -17,16 +18,6 @@ function App() {
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
-
-  const fetchAPI  = async () => {
-    try {
-      const response = await axios.get('http://localhost:8080/api/test')
-      console.log('Response:', response)
-      setResponse(response.data.message)
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    }
-  }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -46,6 +37,15 @@ function App() {
         },
       });
       console.log("Extracted Text:", response.data);
+      setResponse(response.data.text)
+
+      const matchingSkillResponse = await axios.post('http://localhost:8080/api/matchingSkill', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+      });
+      console.log("Matching Skills:", matchingSkillResponse.data);
+      setMatchingSkill(matchingSkillResponse.data.text)
     } catch (error) {
       console.error("Error uploading file:", error);
     }
@@ -53,50 +53,52 @@ function App() {
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
+      <div className="logos">
+        <a href="/" target="_blank">
+          <img src={atsLogo} className="logo" alt="ATS logo" />
         </a>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <div style={{ padding: '20px' }}>
-      <button onClick={fetchAPI}>Generate</button>
-      {res && <p>{res}</p>}
-    </div>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1>ATS Resume Checker</h1>    
       <form onSubmit={handleSubmit}>
-      <div>
-          <label className="read-the-docs">
+      <div className="card" style={{ padding: '20px', maxWidth: '500px', margin: 'auto'}}>
+          <label>
             Job Description:
-            <textarea
+          </label>
+          <textarea
               value={jobDescription}
               onChange={handleJobDescriptionChange}
-              placeholder="Enter the job description here"
+              placeholder="Enter the job description here please"
               rows="5"
               cols="50"
             />
-          </label>
         </div>
-        <div>
-          <label className="read-the-docs">
+        <div className="card" style={{ padding: '20px', maxWidth: '500px', margin: 'auto'}}>
+          <label className="card">
             Upload Resume:
-            <input type="file" accept="application/pdf" onChange={handleFileChange} />
           </label>
+          <input style={{ padding: '20px', maxWidth: '500px', margin: 'auto'}} type="file" accept="application/pdf" onChange={handleFileChange} />
         </div>
-      <button type="submit">Upload</button>
+
+        <button type="submit">Get feedback</button>
+
+      <div className="card" style={{ padding: '20px', maxWidth: '500px', margin: 'auto' }}>
+        <label>
+        Matching skills:
+        </label>
+        <p>
+            {matchingSkill}
+          </p>
+      </div>
+      
+
+      <div className="card" style={{ padding: '20px', maxWidth: '500px', margin: 'auto' }}>
+        <label>
+        Over all feedback:
+        </label>
+          <p>
+            {res}
+          </p>
+      </div>
     </form>
     </>
   )
